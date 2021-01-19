@@ -22,7 +22,7 @@ import (
 )
 
 
-func (gitService gitServiceImplementation) getGitHubClient() *github.Client {
+func (gitService gitServiceImplementation) GetGitHubClient() *github.Client {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: GitHubToken},
@@ -34,7 +34,7 @@ func (gitService gitServiceImplementation) getGitHubClient() *github.Client {
 func (gitService gitServiceImplementation) CheckUserAccessRepo(owner string, repo string) (*github.Repository, error) {
 	ZeroLogger.Info().Msgf("check user has access to %s/%s", owner, repo)
 	ctx := context.Background()
-	client := GitServiceObject.getGitHubClient()
+	client := GitServiceObject.GetGitHubClient()
 	repoInfo, _, err := client.Repositories.Get(ctx, owner, repo)
 	if err != nil {
 		return nil, err
@@ -219,7 +219,7 @@ func (gitService gitServiceImplementation) CreateCommitAndPr(owner string, origi
 		return err
 	}
 	ZeroLogger.Info().Msgf("Branch was pushed '%s/%s'", owner, repo)
-	githubClient := GitServiceObject.getGitHubClient()
+	githubClient := GitServiceObject.GetGitHubClient()
 	newPR := &github.NewPullRequest{
 		Title:               github.String(fmt.Sprintf("[Detect Secrets] %s Secret BaseLine File", action)),
 		Head:                github.String(fmt.Sprintf("%s:%s", owner, currentBranch)),
@@ -267,4 +267,20 @@ func (gitService gitServiceImplementation) ForkRepo(owner string, repo string) (
 	ZeroLogger.Info().Msgf("User who forked: %s", result.Owner.Login)
 
 	return result.Owner.Login, result.GitURL, err
+}
+
+func (gitService gitServiceImplementation) CheckForkedRepo(getURL string) error{
+	ZeroLogger.Info().Msgf("Checking if repo was forked properly")
+	for {
+		response, err := http.Get(getURL)
+		if response.StatusCode == 200 {
+			ZeroLogger.Info().Msgf("Repo has been forked successfully")
+			break
+		}
+		if err != nil {
+			ZeroLogger.Fatal().Msgf("Error: %v", err)
+			return err
+		}
+	}
+	return  nil
 }
