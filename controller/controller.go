@@ -43,7 +43,7 @@ func (controller controllerImplementation) CreateSecretFile(c contextCreateInter
 
 	_forkOwner, _, err := GitServiceObject.ForkRepo(originalOwner, originalRepoURL)
 	if err != nil {
-		return 400, fmt.Sprintf("Error Forking Repo: %s", err)
+		return 400, fmt.Sprintf("Error Forking Repo: %v", err)
 	}
 
 	getURL := fmt.Sprintf("https://%s@api.github.com/repos/%s/%s", GitHubToken, _forkOwner, originalRepoURL)
@@ -61,7 +61,7 @@ func (controller controllerImplementation) CreateSecretFile(c contextCreateInter
 
 	forkedRepoURL, path, err := GitServiceObject.CloneRepo(forkOwner, originalRepoURL)
 	if err != nil {
-		return 400, fmt.Sprintf("Error Cloning Repo: %s", err)
+		return 400, fmt.Sprintf("Error Cloning Repo: %v", err)
 	}
 
 	currentBranch, headBranch, err := GitServiceObject.CreateBranchRepo(forkedRepoURL, originalRepoURL, "create")
