@@ -1,4 +1,4 @@
-module github.com/smiledirectclub.com/sre-secret-scanner-api
+module github.com/eliezer-borde-globant/EBGoProject
 
 go 1.15
 

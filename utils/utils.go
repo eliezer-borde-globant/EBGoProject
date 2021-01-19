@@ -14,3 +14,5 @@ var (
 const (
 	SecretsFileName = ".secrets.baseline"
 )
+
+type SecretUpdateMap map[string][]map[string]interface{}

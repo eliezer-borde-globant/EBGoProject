@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	. "github.com/eliezer-borde-globant/EBGoProject/utils"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/google/go-github/v33/github"
-	. "github.com/smiledirectclub.com/sre-secret-scanner-api/utils"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"net/http"
@@ -21,8 +21,6 @@ import (
 	"time"
 )
 
-
-type secretUpdateMap map[string][]map[string]interface{}
 
 func (gitService gitServiceImplementation) getGitHubClient() *github.Client {
 	ctx := context.Background()
@@ -129,7 +127,7 @@ func (gitService gitServiceImplementation) CreateSecretFile(path string, secretF
 	return nil
 }
 
-func (gitService gitServiceImplementation) EditSecretFile(path string, secretsChanges secretUpdateMap) error {
+func (gitService gitServiceImplementation) EditSecretFile(path string, secretsChanges SecretUpdateMap) error {
 	ZeroLogger.Info().Msgf("Starting to edit the secret file at path: '%s'", path)
 	path = fmt.Sprintf("%s/%s", path, SecretsFileName)
 	dat, err := ioutil.ReadFile(path)

@@ -7,8 +7,13 @@ var (
 )
 
 type controllerInterface interface {
-	UpdateSecretfile(c *fiber.Ctx) error
-	CreateSecretfile(c *fiber.Ctx) error
+	UpdateSecretFile(c *fiber.Ctx) error
+	CreateSecretFile(createInterface contextCreateInterface) error
+}
+
+type contextCreateInterface interface {
+	BodyParser(data *createParams) error
+	Status(code int) *fiber.Ctx
 }
 
 type controllerImplementation struct { }
