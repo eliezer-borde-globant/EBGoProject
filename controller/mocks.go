@@ -20,12 +20,17 @@ type gitServiceMock struct {
 }
 
 type contextMock struct {
-	BodyParserHandler func(*createParams) error
+	BodyParserCreateHandler func(*createParams) error
+	BodyParserUpdateHandler func(params *updateParams) error
 	StatusHandler     func(int) *fiber.Ctx
 }
 
-func (mock contextMock) BodyParser(data *createParams) error {
-	return mock.BodyParserHandler(data)
+func (mock contextMock) BodyParserCreate(data *createParams) error {
+	return mock.BodyParserCreateHandler(data)
+}
+
+func (mock contextMock) BodyParserUpdate(data *updateParams) error {
+	return mock.BodyParserUpdateHandler(data)
 }
 
 func (mock contextMock) Status(code int) *fiber.Ctx {
