@@ -28,6 +28,7 @@ type controllerImplementation struct { }
 func (controller controllerImplementation) CreateSecretFile(c contextInterface) (int, string) {
 	data := new(createParams)
 	if err := c.BodyParserCreate(data); err != nil {
+		ZeroLogger.Error().Msgf("contents not parsed correctly: %v", err)
 		return 400, fmt.Sprintf("Error in data, please review input data: %s", err)
 	}
 	originalRepoURL := data.Repo
@@ -93,7 +94,7 @@ func (controller controllerImplementation) CreateSecretFile(c contextInterface) 
 func (controller controllerImplementation) UpdateSecretFile(c contextInterface) (int, string) {
 	data := new(updateParams)
 	if err := c.BodyParserUpdate(data); err != nil {
-		ZeroLogger.Error().Msgf("contents not parsed correctly %v", err)
+		ZeroLogger.Error().Msgf("contents not parsed correctly: %v", err)
 		return 400, fmt.Sprintf("Error in data, please review input data: %s", err)
 	}
 	originalRepoURL := data.Repo
