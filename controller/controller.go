@@ -37,7 +37,7 @@ func (controller controllerImplementation) CreateSecretFile(c contextCreateInter
 
 	_, err := GitServiceObject.CheckUserAccessRepo(originalOwner, originalRepoURL)
 	if err != nil {
-		ZeroLogger.Fatal().Msgf("%v", err)
+		ZeroLogger.Error().Msgf("%v", err)
 		return 403, "You do not have access to the repo"
 	}
 
@@ -52,7 +52,7 @@ func (controller controllerImplementation) CreateSecretFile(c contextCreateInter
 
 	if err != nil {
 		errorMsg := fmt.Sprintf("Repo didn't fork properly: %v", err)
-		ZeroLogger.Info().Msg(errorMsg)
+		ZeroLogger.Error().Msg(errorMsg)
 		return 400, errorMsg
 	}
 
@@ -61,23 +61,27 @@ func (controller controllerImplementation) CreateSecretFile(c contextCreateInter
 
 	forkedRepoURL, path, err := GitServiceObject.CloneRepo(forkOwner, originalRepoURL)
 	if err != nil {
+		ZeroLogger.Error().Msgf("Error: %v", err)
 		return 400, fmt.Sprintf("Error Cloning Repo: %v", err)
 	}
 
 	currentBranch, headBranch, err := GitServiceObject.CreateBranchRepo(forkedRepoURL, originalRepoURL, "create")
 	if err != nil {
+		ZeroLogger.Error().Msgf("Branch not created: %v", err)
 		return 400, fmt.Sprintf("Error Creating Branch: %s", err)
 	}
 
 	err = GitServiceObject.CreateSecretFile(path, data.Content)
 	if err != nil {
-		return 400, fmt.Sprintf("Error creating .secrets.baseline file: %s", err)
+		ZeroLogger.Error().Msgf("Secrets file not created: %v", err)
+		return 400, fmt.Sprintf("Error creating %s file: %v", SecretsFileName, err)
 	}
 
 	var description = "Created and added .secrets.baseline file, the bot ran the scan on the whole repo " +
 		"and found all the secrets and placed them in .secrets.baseline file."
 	err = GitServiceObject.CreateCommitAndPr(forkOwner, originalOwner, originalRepoURL, currentBranch, headBranch, "Create", description, forkedRepoURL)
 	if err != nil {
+		ZeroLogger.Info().Msg("Updating the existing PR")
 		return 200, fmt.Sprintf("PR was Updated !")
 	}
 	ZeroLogger.Info().Msg("PR was Created !")
