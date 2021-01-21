@@ -1,6 +1,7 @@
 package main
 
 import (
+	//"github.com/eliezer-borde-globant/EBGoProject/controller"
 	//. "github.com/eliezer-borde-globant/EBGoProject/controller"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"

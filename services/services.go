@@ -1,9 +1,12 @@
 package services
 
 import (
+	"fmt"
 	. "github.com/eliezer-borde-globant/EBGoProject/utils"
+	"github.com/go-git/go-git/v5"
 	"github.com/google/go-github/v33/github"
 	"golang.org/x/oauth2"
+	"strings"
 )
 
 
@@ -15,20 +18,20 @@ func (gitService gitServiceImplementation) GetGitHubClient() *github.Client {
 
 	tc := ThirdPartyOauth.NewClient(ctx, ts)
 	return ThirdPartyGitHub.NewClient(tc)
-	//return new(github.Client)
 }
 
-//func (gitService gitServiceImplementation) CheckUserAccessRepo(owner string, repo string) (*github.Repository, error) {
-//	ZeroLogger.Info().Msgf("check user has access to %s/%s", owner, repo)
-//	ctx := context.Background()
-//	client := GitServiceObject.GetGitHubClient()
-//	repoInfo, _, err := client.Repositories.Get(ctx, owner, repo)
-//	if err != nil {
-//		return nil, err
-//	}
-//	return repoInfo, nil
-//}
-//
+func (gitService gitServiceImplementation) CheckUserAccessRepo(owner string, repo string) (*github.Repository, error) {
+	ZeroLogger.Info().Msgf("check user has access to %s/%s", owner, repo)
+	ctx := ThirdPartyContext.Background()
+	client := GitServiceObject.GetGitHubClient()
+	repoInfo, _, err := ThirdPartyGitHub.Get(client, ctx, owner, repo)
+	if err != nil {
+		ZeroLogger.Error().Msgf("Error fetching repo: %v", err)
+		return nil, err
+	}
+	return repoInfo, nil
+}
+
 //func (gitService gitServiceImplementation) CloneRepo(owner string, repo string) (*git.Repository, string, error) {
 //	path := fmt.Sprintf("/tmp/%s-%s", owner, repo)
 //
@@ -53,51 +56,53 @@ func (gitService gitServiceImplementation) GetGitHubClient() *github.Client {
 //	return repoInfo, path, nil
 //}
 //
-//func (gitService gitServiceImplementation) CreateBranchRepo(repoGit *git.Repository, repoName string, action string) (string, string, error) {
-//	ZeroLogger.Info().Msgf("Creating Branch to update secret file in repo %s", repoName)
-//	headRef, err := repoGit.Head()
-//	if err != nil {
-//		ZeroLogger.Fatal().Msgf("Error Creating Branch to update secret file in repo %s, error: %v", repoName, err)
-//		return "", "", err
-//	}
-//	headBranchName := strings.ReplaceAll(headRef.Name().String(), "refs/heads/", "")
-//	branch := fmt.Sprintf("secret_scanner_api/%s/%s/secrets_baseline_file", repoName, action)
-//	workingBranch, err := repoGit.Worktree()
-//	if err != nil {
-//		ZeroLogger.Fatal().Msgf("Error Creating Branch to update secret file in repo %s, error: %v", repoName, err)
-//		return "", "", err
-//	}
-//	ZeroLogger.Info().Msgf("Fetching all Branches from %s", repoName)
-//	err = repoGit.Fetch(&git.FetchOptions{
-//		RefSpecs: []config.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
-//	})
-//	if err != nil {
-//		ZeroLogger.Fatal().Msgf("Error fetching remote Branches from repo %s, error: %v", repoName, err)
-//		return "", "", err
-//	}
-//	ZeroLogger.Info().Msgf("Checking if the branch %s exists in %s", branch, repoName)
-//	err = workingBranch.Checkout(&git.CheckoutOptions{
-//		Branch: plumbing.NewBranchReferenceName(branch),
-//		Force:  true,
-//	})
-//	if err == nil {
-//		ZeroLogger.Info().Msgf("Branch %s already exists in %s, Checking out...", branch, repoName)
-//	} else {
-//		ZeroLogger.Info().Msgf("Creating new branch %s in %s", branch, repoName)
-//		err = workingBranch.Checkout(&git.CheckoutOptions{
-//			Hash:   headRef.Hash(),
-//			Branch: plumbing.NewBranchReferenceName(branch),
-//			Create: true,
-//		})
-//		if err != nil {
-//			ZeroLogger.Fatal().Msgf("Error Creating Branch to update secret file in repo %s, error: %v", repoName, err)
-//			return "", "", err
-//		}
-//		ZeroLogger.Info().Msgf("Branch created in (%s) with the name (%s)", repoName, branch)
-//	}
-//	return branch, headBranchName, err
-//}
-//
+func (gitService gitServiceImplementation) CreateBranchRepo(repoGit *git.Repository, repoName string, action string) (string, string, error) {
+	ZeroLogger.Info().Msgf("Creating Branch to update secret file in repo %s", repoName)
+	headRef, err := ThirdPartyGitHub.Head(repoGit)
+	if err != nil {
+		ZeroLogger.Error().Msgf("Error Creating Branch to update secret file in repo %s, error: %v", repoName, err)
+		return "", "", err
+	}
+	headBranchName := strings.ReplaceAll(headRef.Name().String(), "refs/heads/", "")
+	fmt.Println(headBranchName)
+	branch := fmt.Sprintf("secret_scanner_api/%s/%s/secrets_baseline_file", repoName, action)
+	fmt.Println(branch)
+	workingBranch, err := ThirdPartyGitHub.Worktree(repoGit)
+	if err != nil {
+		ZeroLogger.Error().Msgf("Error Creating Branch to update secret file in repo %s, error: %v", repoName, err)
+		return "", "", err
+	}
+	fmt.Println(workingBranch)
+	ZeroLogger.Info().Msgf("Fetching all Branches from %s", repoName)
+	err = ThirdPartyGitHub.Fetch(repoGit)
+	if err != nil {
+		ZeroLogger.Error().Msgf("Error fetching remote Branches from repo %s, error: %v", repoName, err)
+		return "", "", err
+	}
+	//ZeroLogger.Info().Msgf("Checking if the branch %s exists in %s", branch, repoName)
+	//err = workingBranch.Checkout(&git.CheckoutOptions{
+	//	Branch: plumbing.NewBranchReferenceName(branch),
+	//	Force:  true,
+	//})
+	//if err == nil {
+	//	ZeroLogger.Info().Msgf("Branch %s already exists in %s, Checking out...", branch, repoName)
+	//} else {
+	//	ZeroLogger.Info().Msgf("Creating new branch %s in %s", branch, repoName)
+	//	err = workingBranch.Checkout(&git.CheckoutOptions{
+	//		Hash:   headRef.Hash(),
+	//		Branch: plumbing.NewBranchReferenceName(branch),
+	//		Create: true,
+	//	})
+	//	if err != nil {
+	//		ZeroLogger.Fatal().Msgf("Error Creating Branch to update secret file in repo %s, error: %v", repoName, err)
+	//		return "", "", err
+	//	}
+	//	ZeroLogger.Info().Msgf("Branch created in (%s) with the name (%s)", repoName, branch)
+	//}
+	//return branch, headBranchName, err
+	return "", "", nil
+}
+
 //func (gitService gitServiceImplementation) CreateSecretFile(path string, secretFile string) error {
 //	ZeroLogger.Info().Msg(fmt.Sprintf("Creating Path %s to add %s file ", path, SecretsFileName))
 //	if _, err := os.Stat(path); os.IsNotExist(err) {
