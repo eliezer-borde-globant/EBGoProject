@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/google/go-github/v33/github"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -48,6 +49,18 @@ var _ = Describe("Services", func() {
 				return new(github.Repository), new(github.Response), nil
 			}
 			result, error := GitServiceObject.CheckUserAccessRepo("owner_test", "repo_test")
+			Expect(error).To(BeNil())
+			Expect(result).To(Equal(new(github.Repository)))
+
+		})
+
+		It("CreateCommitAndPr", func() {
+
+			type rectangle struct {
+				Worktree func() *git.Worktree
+			}
+
+			result, error := GitServiceObject.CreateCommitAndPr("owner_test", "original_owner_test", "repo", "currentBranch", "headBranch", "action", "description", rectangle)
 			Expect(error).To(BeNil())
 			Expect(result).To(Equal(new(github.Repository)))
 

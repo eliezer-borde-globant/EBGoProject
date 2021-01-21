@@ -8,7 +8,8 @@ import (
 
 var (
 	//GitServiceObject : Object with service methods.
-	GitServiceObject gitServiceInterface = gitServiceImplementation{}
+	GitServiceObject gitServiceInterface       = gitServiceImplementation{}
+	getRepo          thirdPartyGitHubInterface = thirdPartyGitHubImpl{}
 )
 
 type gitServiceInterface interface {
@@ -24,3 +25,12 @@ type gitServiceInterface interface {
 }
 
 type gitServiceImplementation struct{}
+type thirdPartyGitHubImpl struct{}
+
+func (service thirdPartyGitHubImpl) RepoGit(repoGit *git.Repository) (*git.Repository, error) {
+	return repoGit, nil
+}
+
+type thirdPartyGitHubInterface interface {
+	RepoGit(repoGit *git.Repository) (*git.Repository, error)
+}
