@@ -2,9 +2,9 @@ package controller
 
 import (
 	"fmt"
+
 	. "github.com/eliezer-borde-globant/EBGoProject/services"
 	. "github.com/eliezer-borde-globant/EBGoProject/utils"
-	"github.com/gofiber/fiber/v2"
 )
 
 var (
@@ -12,25 +12,13 @@ var (
 )
 
 type controllerInterface interface {
-	UpdateSecretFile(updateInterface contextInterface) (int, string)
-	CreateSecretFile(createInterface contextInterface) (int, string)
+	UpdateSecretFile(data *UpdateParams) (int, string)
+	CreateSecretFile(data *CreateParams) (int, string)
 }
 
-type contextInterface interface {
-	BodyParserCreate(data *createParams) error
-	BodyParserUpdate(data *updateParams) error
-	Status(code int) *fiber.Ctx
-}
+type controllerImplementation struct{}
 
-type controllerImplementation struct { }
-
-
-func (controller controllerImplementation) CreateSecretFile(c contextInterface) (int, string) {
-	data := new(createParams)
-	if err := c.BodyParserCreate(data); err != nil {
-		ZeroLogger.Error().Msgf("contents not parsed correctly: %v", err)
-		return 400, fmt.Sprintf("Error in data, please review input data: %s", err)
-	}
+func (controller controllerImplementation) CreateSecretFile(data *CreateParams) (int, string) {
 	originalRepoURL := data.Repo
 	originalOwner := data.Owner
 	ZeroLogger.Info().Msgf("REPO: %s", originalRepoURL)
@@ -91,12 +79,7 @@ func (controller controllerImplementation) CreateSecretFile(c contextInterface) 
 
 }
 
-func (controller controllerImplementation) UpdateSecretFile(c contextInterface) (int, string) {
-	data := new(updateParams)
-	if err := c.BodyParserUpdate(data); err != nil {
-		ZeroLogger.Error().Msgf("contents not parsed correctly: %v", err)
-		return 400, fmt.Sprintf("Error in data, please review input data: %s", err)
-	}
+func (controller controllerImplementation) UpdateSecretFile(data *UpdateParams) (int, string) {
 	originalRepoURL := data.Repo
 	originalOwner := data.Owner
 	_, err := GitServiceObject.CheckUserAccessRepo(originalOwner, originalRepoURL)

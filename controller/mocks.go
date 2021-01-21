@@ -3,7 +3,6 @@ package controller
 import (
 	. "github.com/eliezer-borde-globant/EBGoProject/utils"
 	"github.com/go-git/go-git/v5"
-	"github.com/gofiber/fiber/v2"
 	"github.com/google/go-github/v33/github"
 )
 
@@ -16,25 +15,7 @@ type gitServiceMock struct {
 	CreateSecretFileHandler    func(string, string) error
 	CreateCommitAndPrHandler   func(string, string, string, string, string, string, string, *git.Repository) error
 	EditSecretFileHandler      func(string, SecretUpdateMap) error
-	CheckForkedRepoHandler	   func(string) error
-}
-
-type contextMock struct {
-	BodyParserCreateHandler func(*createParams) error
-	BodyParserUpdateHandler func(params *updateParams) error
-	StatusHandler     func(int) *fiber.Ctx
-}
-
-func (mock contextMock) BodyParserCreate(data *createParams) error {
-	return mock.BodyParserCreateHandler(data)
-}
-
-func (mock contextMock) BodyParserUpdate(data *updateParams) error {
-	return mock.BodyParserUpdateHandler(data)
-}
-
-func (mock contextMock) Status(code int) *fiber.Ctx {
-	return mock.StatusHandler(code)
+	CheckForkedRepoHandler     func(string) error
 }
 
 func (mock gitServiceMock) GetGitHubClient() *github.Client {
